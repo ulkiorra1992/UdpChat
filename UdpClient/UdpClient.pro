@@ -35,3 +35,6 @@ HEADERS += \
 
 FORMS += \
         client.ui
+
+RESOURCES += \
+    res.qrc
