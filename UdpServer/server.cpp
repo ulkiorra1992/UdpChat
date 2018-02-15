@@ -1,6 +1,7 @@
 #include "server.h"
 #include "ui_server.h"
 #include "projectsettings.h"
+#include "usersettings.h"
 
 #include <QNetworkInterface>
 #include <QDateTime>
@@ -42,6 +43,9 @@ void Server::onProcessDatagram()
 {
     QByteArray baDatagram;
     qint8 state;
+    QString login;
+    QString userName;
+    QString password;
     QHostAddress remoteAddr;
     quint16 remotePort;
     QDateTime dateTime;
@@ -56,13 +60,49 @@ void Server::onProcessDatagram()
     in.setVersion(QDataStream::Qt_4_8);
     QString message;
 
-    in >> state >>message >> dateTime;
+    in >> state;
+    in >> login;
+    in >> userName;
+    in >> password;
+
+// Регистрация нового пользователя
+    if (state == 'R') {
+        qDebug() << "login=" << login;
+        qDebug() << "userName=" << userName;
+        qDebug() << "password=" << password;
+        qDebug() << "remoteAddr=" << remoteAddr;
+        qDebug() << "remotePort=" << remotePort;
+
+        ProjectSettings::getInstance()->setUserRegistrationLogin(login);
+        ProjectSettings::getInstance()->setUserRegistrationNickName(userName);
+        ProjectSettings::getInstance()->setUserRegistrationPassword(password);
+
+        bool state = UserSettings::setRegistrationUser();
+        qDebug() << "state=" << state;
+    }
+
+// Авторизация на сервере зарегистрированного пользователя
+    if (state == 'A') {
+        qDebug() << "login=" << login;
+        qDebug() << "userName=" << userName;
+        qDebug() << "password=" << password;
+        qDebug() << "remoteAddr=" << remoteAddr;
+        qDebug() << "remotePort=" << remotePort;
+
+        ProjectSettings::getInstance()->setUserAuthorizationLogin(login);
+        ProjectSettings::getInstance()->setUserAuthorizationPassword(password);
+        ProjectSettings::getInstance()->setUserAuthorizationIpAdress(remoteAddr.toString());
+        ProjectSettings::getInstance()->setUserAuthorizationPort(remotePort);
+
+        QString name = UserSettings::setAuthorizationUser();
+        qDebug() << "name=" << name;
+
+    }
+
 
     if (state =='M') {
         ui->textEdit->append(message);
     }
-
-    qDebug() << state << remoteAddr << remotePort << message << dateTime;
 }
 
 void Server::on_startServer_triggered()

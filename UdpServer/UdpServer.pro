@@ -31,13 +31,15 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
         server.cpp \
-    projectsettings.cpp
+    projectsettings.cpp \
+    usersettings.cpp
 
 HEADERS += \
         server.h \
     projectsettings.h \
     core_global.h \
-    projectnamehelper.h
+    projectnamehelper.h \
+    usersettings.h
 
 FORMS += \
         server.ui
