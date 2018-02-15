@@ -40,10 +40,10 @@
      </layout>
     </item>
     <item row="1" column="0">
-     <widget class="QTextEdit" name="TeIn"/>
+     <widget class="QTextEdit" name="TeMessageIn"/>
     </item>
     <item row="2" column="0">
-     <widget class="QTextEdit" name="TeOut">
+     <widget class="QTextEdit" name="TeMessageOut">
       <property name="maximumSize">
        <size>
         <width>16777215</width>
@@ -77,8 +77,8 @@
     <property name="title">
      <string>Меню</string>
     </property>
-    <addaction name="Registration"/>
     <addaction name="Authorization"/>
+    <addaction name="Registration"/>
     <addaction name="Quit"/>
    </widget>
    <widget class="QMenu" name="menu_2">

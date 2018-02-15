@@ -28,13 +28,19 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-        client.cpp
+        client.cpp \
+    registrationusers.cpp \
+    authorizationusers.cpp
 
 HEADERS += \
-        client.h
+        client.h \
+    registrationusers.h \
+    authorizationusers.h
 
 FORMS += \
-        client.ui
+        client.ui \
+    registrationusers.ui \
+    authorizationusers.ui
 
 RESOURCES += \
     res.qrc

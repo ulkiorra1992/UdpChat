@@ -34,6 +34,14 @@ private:
     QUdpSocket *udpSocket_;
     QSystemTrayIcon   *trayIcon_;   //!< Объявляем объект иконки приложения для трея
 
+    qint8 type_;
+    QString login_;
+    QString nickName_;
+    QString password_;
+    QString serverIp_;
+
+    void usersData();
+
 private slots:
     void onProcessDatagram();
     void on_tbSend_clicked();

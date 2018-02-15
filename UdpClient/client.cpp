@@ -1,5 +1,7 @@
 #include "client.h"
 #include "ui_client.h"
+#include "registrationusers.h"
+#include "authorizationusers.h"
 
 #include <QDateTime>
 
@@ -50,12 +52,29 @@ Client::~Client()
 
 void Client::on_Registration_triggered()
 {
-
+    RegistrationUsers *reg = new RegistrationUsers;
+    if(reg->exec() == QDialog::Accepted) {
+        login_ = reg->getUserLogin();
+        nickName_ = reg->getUserNickName();
+        password_ = reg->getUserPassword();
+        serverIp_ = reg->getServerIp();
+        type_ = 'R';
+        usersData();
+    }
+    delete reg;
 }
 
 void Client::on_Authorization_triggered()
 {
-
+    AuthorizationUsers * authorization = new AuthorizationUsers;
+    if(authorization->exec() == QDialog::Accepted) {
+        login_ = authorization->getUserLogin();
+        password_ = authorization->getUserPassword();
+        serverIp_ = authorization->getServerIp();
+        type_ = 'A';
+        usersData();
+    }
+    delete authorization;
 }
 
 void Client::onIconActivated(QSystemTrayIcon::ActivationReason reason)
@@ -79,6 +98,17 @@ void Client::onIconActivated(QSystemTrayIcon::ActivationReason reason)
     }
 }
 
+void Client::usersData()
+{
+    QByteArray baDatagram;
+    QDataStream out(&baDatagram, QIODevice::WriteOnly);
+    out << type_;
+    out << login_;
+    out << nickName_;
+    out << password_;
+    udpSocket_->writeDatagram(baDatagram, QHostAddress(serverIp_), 55555);
+}
+
 void Client::onProcessDatagram()
 {
     QByteArray baDatagram;
@@ -98,7 +128,7 @@ void Client::onProcessDatagram()
     QString message;
 
     in >> message;
-    ui->TeIn->append(message);
+    ui->TeMessageIn->append(message);
 
     // Пульсация значка приложения
     QApplication::alert(this);
@@ -109,12 +139,10 @@ void Client::on_tbSend_clicked()
 {
     QByteArray baDatagram;
     QDateTime dateTime = QDateTime::currentDateTime();
-    qint8 state = 'M';
-    int port = 55555;
     QDataStream out(&baDatagram, QIODevice::WriteOnly);
     out.setVersion(QDataStream::Qt_4_8);
-    out << state << ui->TeOut->toPlainText() << dateTime;
-    udpSocket_->writeDatagram(baDatagram, QHostAddress("192.168.0.84"), port);
+    out << type_;
+    udpSocket_->writeDatagram(baDatagram, QHostAddress(serverIp_), 55555);
 }
 
 void Client::onShowMessage(QString message)
