@@ -12,18 +12,19 @@ UserSettings::UserSettings(QObject *parent) :
 
 }
 
-bool UserSettings::setRegistrationUser()
+bool UserSettings::getRegistrationUser()
 {
 // ============ Для отображения русских букв в файле Setting.ini ============ //
     QTextCodec *codecForLocaleName = QTextCodec::codecForName("Windows-1251");
     QTextCodec::setCodecForLocale(codecForLocaleName);
 //
 
-   QSettings settings(QDir::toNativeSeparators(QCoreApplication::applicationDirPath() + "/setting.ini"),
-                             QSettings::IniFormat);
+   QSettings settings(QDir::toNativeSeparators(QCoreApplication::applicationDirPath()
+                                               + "/setting.ini"), QSettings::IniFormat);
    settings.setIniCodec(codecForLocaleName);
 // Проверка зарегистрирован ли пользователь на сервере
-   if (settings.contains("RegistrationLogin/" + ProjectSettings::getInstance()->getUserRegistrationLogin().toString())) {
+   if (settings.contains("RegistrationLogin/" +
+                         ProjectSettings::getInstance()->getUserRegistrationLogin().toString())) {
         return false;
    } else {
        settings.beginGroup("RegistrationLogin");
@@ -39,27 +40,27 @@ bool UserSettings::setRegistrationUser()
    }
 }
 
-QString UserSettings::setAuthorizationUser()
+QString UserSettings::getAuthorizationUser(QString login, QString password)
 {
     QString nickName;
     QSettings settings(QDir::toNativeSeparators(QCoreApplication::applicationDirPath() + "/setting.ini"),
                        QSettings::IniFormat);
 
-    if (settings.contains("RegistrationLogin/" + ProjectSettings::getInstance()->getUserAuthorizationLogin().toString())) {
+    if (settings.contains("RegistrationLogin/" + login)) {
         settings.beginGroup("RegistrationPassword");
-        QString regPassword = settings.value(ProjectSettings::getInstance()->getUserAuthorizationLogin().toString(),
-                                             ProjectSettings::getInstance()->getUserRegistrationPassword().toString()).toString();
+        QString regPassword = settings.value(login).toString();
         settings.endGroup();
 
-        if (ProjectSettings::getInstance()->getUserAuthorizationPassword() == regPassword) {
-//            settings.beginGroup("AuthorizationIpAddres");
-//            settings.setValue(ProjectSettings::getInstance()->getUserAuthorizationLogin().toString(),
-//                              ProjectSettings::getInstance()->getUserAuthorizationIpAdress());
-//            settings.endGroup();
-
+        if (password == regPassword) {
             settings.beginGroup("RegistrationLogin");
-            nickName = settings.value(ProjectSettings::getInstance()->getUserAuthorizationLogin().toString(),
-                                      ProjectSettings::getInstance()->getUserRegistrationNickName()).toString();
+            nickName = settings.value(login).toString();
+            settings.endGroup();
+
+            settings.beginGroup(ProjectSettings::getInstance()->getUserAuthorizationLogin().toString());
+            settings.setValue("IP", ProjectSettings::getInstance()->getUserAuthorizationIpAdress());
+            settings.setValue("Port", ProjectSettings::getInstance()->getUserAuthorizationPort());
+            settings.endGroup();
+
             return nickName;
         } else {
             return nickName;
@@ -67,4 +68,28 @@ QString UserSettings::setAuthorizationUser()
     } else {
         return nickName;
     }
+}
+
+QString UserSettings::getUserAdress(QString login)
+{
+    QString ipAdress;
+    QSettings settings(QDir::toNativeSeparators(QCoreApplication::applicationDirPath() + "/setting.ini"),
+                       QSettings::IniFormat);
+    if (settings.contains(login + "/IP")) {
+        ipAdress = settings.value(login + "/IP").toString();
+        return ipAdress;
+    }
+    return ipAdress;
+}
+
+int UserSettings::getUserPort(QString login)
+{
+    int port;
+    QSettings settings(QDir::toNativeSeparators(QCoreApplication::applicationDirPath() + "/setting.ini"),
+                       QSettings::IniFormat);
+    if (settings.contains(login + "/Port")) {
+        port = settings.value(login + "/Port").toInt();
+        return port;
+    }
+    return port;
 }
