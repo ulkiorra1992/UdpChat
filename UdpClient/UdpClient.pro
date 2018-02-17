@@ -30,12 +30,14 @@ SOURCES += \
         main.cpp \
         client.cpp \
     registrationusers.cpp \
-    authorizationusers.cpp
+    authorizationusers.cpp \
+    inquirystate.cpp
 
 HEADERS += \
         client.h \
     registrationusers.h \
-    authorizationusers.h
+    authorizationusers.h \
+    inquirystate.h
 
 FORMS += \
         client.ui \

@@ -6,6 +6,10 @@
 #include <QAction>
 #include <QCloseEvent>
 #include <QSystemTrayIcon>
+#include <QModelIndex>
+#include <QTimer>
+
+#include "inquirystate.h"
 
 namespace Ui {
 class Client;
@@ -33,20 +37,30 @@ private:
     Ui::Client *ui;
     QUdpSocket *udpSocket_;
     QSystemTrayIcon   *trayIcon_;   //!< Объявляем объект иконки приложения для трея
+    QTimer *pTimer_;
+    InquiryState *state_;
 
+    QMap <QString, QString> users_;
     qint8 type_;
     QString login_;
     QString nickName_;
     QString password_;
     QString serverIp_;
+    QString userLogin_;
 
     void usersData();
+    void usersListWidget(QString user);
+
 
 private slots:
     void onProcessDatagram();
     void on_tbSend_clicked();
     void onShowMessage(QString message);    //!< Всплывающее информативное сообщение с текстом принятого сообщения.
     void onMessageClicked();                //!< При клике по всплывающему сообщению открывается окно чата.
+    void on_Quit_triggered();
+    void onListWidgetUser(QModelIndex index);
+    void onConnectToServer();
+    void onServerState(bool state);
 
 protected:
     /**
@@ -56,6 +70,7 @@ protected:
      * @param event событие
      */
     void closeEvent(QCloseEvent *event);
+    void keyReleaseEvent(QKeyEvent * event);
 };
 
 #endif // CLIENT_H

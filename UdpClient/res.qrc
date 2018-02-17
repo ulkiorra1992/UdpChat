@@ -2,5 +2,8 @@
     <qresource prefix="/">
         <file>img/chat.png</file>
         <file>img/quit.png</file>
+        <file>img/user.png</file>
+        <file>img/ind_green.png</file>
+        <file>img/ind_grey.png</file>
     </qresource>
 </RCC>

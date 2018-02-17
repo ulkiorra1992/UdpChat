@@ -4,6 +4,7 @@
 #include "authorizationusers.h"
 
 #include <QDateTime>
+#include <QCoreApplication>
 
 Client::Client(QWidget *parent) :
     QMainWindow(parent),
@@ -11,6 +12,16 @@ Client::Client(QWidget *parent) :
 {
     ui->setupUi(this);
     setWindowIcon(QIcon(":/img/chat.png"));
+
+    pTimer_ = new QTimer(this);
+    pTimer_->setInterval(3000);
+    pTimer_->start();
+    connect(pTimer_, SIGNAL(timeout()), this, SLOT(onConnectToServer()));
+
+    state_ = new InquiryState();
+    connect(state_, SIGNAL(responseReceived(bool)), this, SLOT(onServerState(bool)));
+
+    ui->lblStateRegAuthorization->hide();
 
 /* Инициализируем иконку трея, устанавливаем иконку своего приложения,
  * а также задаем всплывающую подсказку
@@ -43,6 +54,8 @@ Client::Client(QWidget *parent) :
     udpSocket_ = new QUdpSocket(this);
     udpSocket_->bind(55555);
     connect(udpSocket_, SIGNAL(readyRead()), this, SLOT(onProcessDatagram()));
+
+    connect(ui->listWidget, SIGNAL(clicked(QModelIndex)), this, SLOT(onListWidgetUser(QModelIndex)));
 }
 
 Client::~Client()
@@ -60,6 +73,7 @@ void Client::on_Registration_triggered()
         serverIp_ = reg->getServerIp();
         type_ = 'R';
         usersData();
+        ui->lblState->setText("Регистрация...");
     }
     delete reg;
 }
@@ -73,6 +87,7 @@ void Client::on_Authorization_triggered()
         serverIp_ = authorization->getServerIp();
         type_ = 'A';
         usersData();
+        ui->lblState->setText("Авторизация...");
     }
     delete authorization;
 }
@@ -109,13 +124,40 @@ void Client::usersData()
     udpSocket_->writeDatagram(baDatagram, QHostAddress(serverIp_), 55555);
 }
 
+void Client::usersListWidget(QString user)
+{
+    QListWidgetItem *item = 0;
+        item = new QListWidgetItem(user, ui->listWidget);
+        item->setIcon(QPixmap(":/img/user.png"));
+}
+
+void Client::onConnectToServer()
+{
+    QByteArray baDatagram;
+    type_ = 'C';
+    QDataStream out(&baDatagram, QIODevice::WriteOnly);
+    out << type_;
+    udpSocket_->writeDatagram(baDatagram, QHostAddress(serverIp_), 55555);
+    state_->startTimerRequest();
+}
+
+void Client::onServerState(bool state)
+{
+    if (!state) {
+        ui->lblState->setText("<b><font color=red>нет связи с сервером</font></b>");
+    }
+}
+
+
 void Client::onProcessDatagram()
 {
     QByteArray baDatagram;
-    qint8 state;
+    qint8 typeDatagram;
+    QString state;
     QHostAddress remoteAddr;
     quint16 remotePort;
-    QDateTime dateTime;
+    QString receivedMessage;
+    QDateTime dateTime = QDateTime::currentDateTime();
 
     do {
         baDatagram.resize(udpSocket_->pendingDatagramSize());
@@ -124,29 +166,97 @@ void Client::onProcessDatagram()
     } while(udpSocket_->hasPendingDatagrams());
 
     QDataStream in(&baDatagram, QIODevice::ReadOnly);
-    in.setVersion(QDataStream::Qt_4_8);
-    QString message;
 
-    in >> message;
-    ui->TeMessageIn->append(message);
+    in >> typeDatagram >> state >> users_ >> receivedMessage;
 
-    // Пульсация значка приложения
-    QApplication::alert(this);
-    onShowMessage(message);
+    if (typeDatagram == 'R') {
+        if (state == "failure") {
+            ui->lblStateRegAuthorization->show();
+            ui->lblStateRegAuthorization->setText("Пользователь с таким логином существует!");
+        } else {
+            ui->lblStateRegAuthorization->hide();
+            ui->lblStateRegAuthorization->setText("");
+            ui->lblState->setText("Успех!");
+        }
+    }
+
+    if (typeDatagram == 'A') {
+        if (state == "failure") {
+            ui->lblStateRegAuthorization->show();
+            ui->lblStateRegAuthorization->setText("Не правильные логин или пароль!");
+        } else {
+            ui->lblStateRegAuthorization->hide();
+            ui->lblStateRegAuthorization->setText("");
+            ui->lblState->setText("Успех!");
+            ui->listWidget->clear();
+            Q_FOREACH(QString login, users_.keys()) { // получаем сисок логинов и по ним получаем список имен пользователей для отображения
+                if (login != login_) {
+                    usersListWidget(users_.value(login));
+                }
+                setWindowTitle("Пользователь: " + users_.value(login_));
+            }
+        }
+    }
+
+    if (typeDatagram == 'M') {
+        ui->TeMessageIn->append(dateTime.toString("[hh:mm:ss]")
+                                /*+ "<b><font color=blue>Принято: </font></b>"*/);
+        ui->TeMessageIn->setAlignment(Qt::AlignLeft);
+        ui->TeMessageIn->setTextColor(QColor(Qt::gray));
+        ui->TeMessageIn->append(receivedMessage);
+
+        onShowMessage(receivedMessage);
+
+        QByteArray baDatagram;
+        type_ = 'V';
+        QDataStream out(&baDatagram, QIODevice::WriteOnly);
+        out << type_;
+        out << login_;
+        out << nickName_;
+        out << password_;
+        out << userLogin_;
+        udpSocket_->writeDatagram(baDatagram, QHostAddress(serverIp_), 55555);
+    }
+
+    if (typeDatagram == 'Q') {
+        ui->listWidget->clear();
+        Q_FOREACH(QString login, users_.keys()) { // получаем сисок логинов и по ним получаем список имен пользователей для отображения
+            usersListWidget(users_.value(login));
+            setWindowTitle("Пользователь: " + users_.value(login_));
+        }
+    }
+
+    if (typeDatagram == 'C') {
+        if (state == "online") {
+            state_->stopTimerRequest();
+            ui->lblState->setText("<b><font color=green>есть связь с сервером</font></b>");
+        }
+    }
 }
 
 void Client::on_tbSend_clicked()
 {
-    QByteArray baDatagram;
     QDateTime dateTime = QDateTime::currentDateTime();
+    QByteArray baDatagram;
     QDataStream out(&baDatagram, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Qt_4_8);
     out << type_;
+    out << login_;
+    out << nickName_;
+    out << password_;
+    out << userLogin_;
+    out << ui->TeMessageOut->toPlainText();
     udpSocket_->writeDatagram(baDatagram, QHostAddress(serverIp_), 55555);
+    ui->TeMessageIn->setAlignment(Qt::AlignRight);
+    ui->TeMessageIn->setFont(QFont("Times", 12, QFont::Bold));
+    ui->TeMessageIn->append(users_.value(login_) + dateTime.toString("[hh:mm:ss]"));
+    ui->TeMessageIn->append(ui->TeMessageOut->toPlainText());
+    ui->TeMessageOut->clear();
 }
 
 void Client::onShowMessage(QString message)
 {
+    // Пульсация значка приложения
+    QApplication::alert(this);
     trayIcon_->showMessage("Новое сообщение", message,
                            QSystemTrayIcon::Information,3000);
 }
@@ -171,6 +281,29 @@ void Client::closeEvent(QCloseEvent *event)
                                    "развернуть окно приложения, щелкните по иконке приложения в трее",
                                    icon, 4000);
         } else {
-
+            type_ = 'Q';
+            usersData();
         }
+}
+
+void Client::keyReleaseEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) {
+        type_ = 'M';
+        on_tbSend_clicked();
+    }
+}
+
+
+void Client::on_Quit_triggered()
+{
+    type_ = 'Q';
+    usersData();
+    qApp->exit();
+}
+
+void Client::onListWidgetUser(QModelIndex index)
+{
+    userLogin_ = users_.key(ui->listWidget->item(index.row())->text());
+    qDebug() << userLogin_;
 }
