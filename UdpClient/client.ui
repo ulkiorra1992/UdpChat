@@ -15,18 +15,58 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="0" colspan="2">
-     <widget class="QLabel" name="lblStateRegAuthorization">
-      <property name="styleSheet">
-       <string notr="true">color: rgb(170, 0, 0);
-font: 75 10pt &quot;DejaVu Sans Mono&quot;;</string>
+    <item row="3" column="0">
+     <widget class="QTextEdit" name="TeMessageOut">
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>50</height>
+       </size>
       </property>
-      <property name="text">
-       <string/>
+      <property name="html">
+       <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="acceptRichText">
+       <bool>true</bool>
       </property>
      </widget>
     </item>
-    <item row="1" column="2" rowspan="3">
+    <item row="1" column="0">
+     <widget class="QStackedWidget" name="stackedWidget">
+      <property name="frameShape">
+       <enum>QFrame::NoFrame</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Plain</enum>
+      </property>
+      <property name="lineWidth">
+       <number>0</number>
+      </property>
+      <property name="midLineWidth">
+       <number>0</number>
+      </property>
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="page_1">
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <widget class="QTextEdit" name="TeMessageIn">
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="page_2"/>
+     </widget>
+    </item>
+    <item row="1" column="2" rowspan="4">
      <widget class="QListWidget" name="listWidget">
       <property name="maximumSize">
        <size>
@@ -36,27 +76,7 @@ font: 75 10pt &quot;DejaVu Sans Mono&quot;;</string>
       </property>
      </widget>
     </item>
-    <item row="2" column="0">
-     <widget class="QTextEdit" name="TeMessageOut">
-      <property name="maximumSize">
-       <size>
-        <width>16777215</width>
-        <height>50</height>
-       </size>
-      </property>
-      <property name="acceptRichText">
-       <bool>true</bool>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QTextEdit" name="TeMessageIn">
-      <property name="readOnly">
-       <bool>true</bool>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="0">
+    <item row="4" column="0">
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
        <spacer name="horizontalSpacer">
@@ -80,7 +100,18 @@ font: 75 10pt &quot;DejaVu Sans Mono&quot;;</string>
       </item>
      </layout>
     </item>
-    <item row="4" column="0">
+    <item row="0" column="0" colspan="2">
+     <widget class="QLabel" name="lblStateInfo">
+      <property name="styleSheet">
+       <string notr="true">color: rgb(170, 0, 0);
+font: 75 10pt &quot;DejaVu Sans Mono&quot;;</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="0">
      <widget class="QLabel" name="lblState">
       <property name="text">
        <string/>
@@ -110,7 +141,14 @@ font: 75 10pt &quot;DejaVu Sans Mono&quot;;</string>
     <property name="title">
      <string>Настройки</string>
     </property>
+    <widget class="QMenu" name="menu_3">
+     <property name="title">
+      <string>Обои</string>
+     </property>
+     <addaction name="action_2"/>
+    </widget>
     <addaction name="appTray"/>
+    <addaction name="menu_3"/>
    </widget>
    <addaction name="menu"/>
    <addaction name="menu_2"/>
@@ -151,6 +189,16 @@ font: 75 10pt &quot;DejaVu Sans Mono&quot;;</string>
    </property>
    <property name="text">
     <string>Сворачивать в трей</string>
+   </property>
+  </action>
+  <action name="action_2">
+   <property name="text">
+    <string>Горы</string>
+   </property>
+  </action>
+  <action name="action1">
+   <property name="text">
+    <string>1</string>
    </property>
   </action>
  </widget>

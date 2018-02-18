@@ -5,6 +5,9 @@
 
 #include <QMainWindow>
 #include <QUdpSocket>
+#include <QAction>
+#include <QCloseEvent>
+#include <QSystemTrayIcon>
 
 namespace Ui {
 class Server;
@@ -21,6 +24,8 @@ public:
 private:
     Ui::Server *ui;
     QUdpSocket *udpSocket_;
+    QSystemTrayIcon   *trayIcon_;   //!< Объявляем объект иконки приложения для трея
+
     QMap<QString, QString> clients_;
     QList<QString> users_;
 
@@ -51,14 +56,27 @@ private:
      * @param msg сообщение
      */
     void transferMessage(QString remoteAddr, quint16 remotePort,
-                         qint8 typeDatagram, QString state, QString msg);
+                         qint8 typeDatagram, QString state, QString msg, QString name);
 
 private slots:
     void onProcessDatagram();
     void on_startServer_triggered();
 
-protected:
+    /**
+     * @brief onIconActivated обработка принятия сигнала от события нажатия
+     * на иконку приложения в трей
+     * @param reason
+     */
+    void onIconActivated(QSystemTrayIcon::ActivationReason reason);
 
+protected:
+    /**
+     * @brief closeEvent Виртуальная функция родительского класса в нашем классе
+     * переопределяется для изменения поведения приложения,
+     * чтобы оно сворачивалось в трей, когда мы этого хотим
+     * @param event событие
+     */
+    void closeEvent(QCloseEvent *event);
 };
 
 #endif // SERVER_H

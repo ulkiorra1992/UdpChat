@@ -1,0 +1,27 @@
+IDI_ICON1   ICON    DISCARDABLE "chat.ico"
+
+#include <windows.h>
+#include "version.h"
+
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION     0,0,1
+PRODUCTVERSION  1,0,0,0
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904E4"
+        BEGIN
+            VALUE "CompanyName",        "ёрий"
+            VALUE "LegalCopyright",     "ёрий"
+            VALUE "FileDescription",    "„ат"
+            VALUE "FileVersion",        "chat_2018-02-18.1~iter1_i386_win"
+            VALUE "ProductName",        "„ат"
+            VALUE "ProductVersion",     VER
+        END
+    END
+
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation",    0x419, 1251
+    END
+END

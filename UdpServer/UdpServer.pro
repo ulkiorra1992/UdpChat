@@ -43,3 +43,6 @@ HEADERS += \
 
 FORMS += \
         server.ui
+
+RESOURCES += \
+    res.qrc

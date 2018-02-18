@@ -35,6 +35,7 @@ SOURCES += \
 
 HEADERS += \
         client.h \
+    version.h \
     registrationusers.h \
     authorizationusers.h \
     inquirystate.h
@@ -46,3 +47,6 @@ FORMS += \
 
 RESOURCES += \
     res.qrc
+
+win32: RC_FILE = resources.rc
+OTHER_FILES += resources.rc

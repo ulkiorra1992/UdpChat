@@ -61,6 +61,9 @@ private slots:
     void onListWidgetUser(QModelIndex index);
     void onConnectToServer();
     void onServerState(bool state);
+    void onTextChanged();
+
+    void on_action_2_triggered();
 
 protected:
     /**

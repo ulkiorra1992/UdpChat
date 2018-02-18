@@ -5,5 +5,8 @@
         <file>img/user.png</file>
         <file>img/ind_green.png</file>
         <file>img/ind_grey.png</file>
+        <file>img/3.gif</file>
+        <file>style/transparent.qss</file>
+        <file>style/nature_1.jpg</file>
     </qresource>
 </RCC>

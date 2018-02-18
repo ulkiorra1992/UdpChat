@@ -35,7 +35,14 @@
     </property>
     <addaction name="startServer"/>
    </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="title">
+     <string>Настройки</string>
+    </property>
+    <addaction name="appTray"/>
+   </widget>
    <addaction name="menu"/>
+   <addaction name="menu_2"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -49,6 +56,14 @@
   <action name="startServer">
    <property name="text">
     <string>Запустить сервер</string>
+   </property>
+  </action>
+  <action name="appTray">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Сворачивать в трей</string>
    </property>
   </action>
  </widget>

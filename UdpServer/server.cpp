@@ -12,7 +12,35 @@ Server::Server(QWidget *parent) :
     ui(new Ui::Server)
 {
     ui->setupUi(this);
+    setWindowIcon(QIcon(":/img/server.png"));
 
+/* Инициализируем иконку трея, устанавливаем иконку своего приложения,
+ * а также задаем всплывающую подсказку
+ */
+    trayIcon_ = new QSystemTrayIcon(this);
+    trayIcon_->setIcon(QIcon(":/img/server.png"));
+    trayIcon_->setToolTip("Сервер");
+//
+// ============= Создаем контекстное меню из двух пунктов =================== //
+    QMenu *menu = new QMenu(this);
+    QAction *viewWindow = new QAction("Открыть окно Сервера", this);
+    QAction *quitWindow = new QAction("Выход", this);
+//
+    connect(viewWindow, SIGNAL(triggered(bool)), this, SLOT(show()));
+    connect(quitWindow, SIGNAL(triggered(bool)), this, SLOT(close()));
+
+    menu->addAction(viewWindow);
+    menu->addAction(quitWindow);
+
+// Установка контекстного меню на иконку и отображение иконки приложения в трее
+    trayIcon_->setContextMenu(menu);
+    trayIcon_->show();
+
+// === Подключение сигнала нажатия на иконку к обработчику данного нажатия == //
+    connect(trayIcon_, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
+            this, SLOT(onIconActivated(QSystemTrayIcon::ActivationReason)));
+
+// Определение своего ip адреса
     QString ipAddress;
     QList<QHostAddress> ipAddressesList = QNetworkInterface::allAddresses();
     // используем первый не локальный адрес IPv4
@@ -58,11 +86,12 @@ void Server::responseAuthorization(QString remoteAddr, int remotePort,
 }
 
 void Server::transferMessage(QString remoteAddr, quint16 remotePort,
-                             qint8 typeDatagram, QString state, QString msg)
+                             qint8 typeDatagram, QString state, QString msg,
+                             QString name)
 {
     QByteArray baDatagram;
     QDataStream out(&baDatagram, QIODevice::WriteOnly);
-    out << typeDatagram << state << clients_ << msg;
+    out << typeDatagram << state << clients_ << msg << name;
     udpSocket_->writeDatagram(baDatagram, QHostAddress(remoteAddr), remotePort);
 }
 
@@ -142,10 +171,11 @@ void Server::onProcessDatagram()
         state = "success";
         ui->textEdit->append(QString("Время:%0 login=%1, message=%2").arg(dateTime.toString("[hh:mm:ss] "))
                              .arg(toSendUser).arg(message));
+        QString name = UserSettings::getAuthorizationUser(login, password);
         QString ipAdress = UserSettings::getUserAdress(toSendUser);
         int port = UserSettings::getUserPort(toSendUser);
 
-        transferMessage(ipAdress, port, type, state, message);
+        transferMessage(ipAdress, port, type, state, message, name);
     }
 
 // Удаление пользователя при его отключении от сервера
@@ -176,14 +206,65 @@ void Server::onProcessDatagram()
     if (typeDatagram == 'V') {
         type = 'V';
         state = "success";
+        QString name = UserSettings::getAuthorizationUser(login, password);
         QString ipAdress = UserSettings::getUserAdress(toSendUser);
         int port = UserSettings::getUserPort(toSendUser);
 
-        transferMessage(ipAdress, port, type, state, message);
+        transferMessage(ipAdress, port, type, state, message, name);
+    }
+
+// Фича отправка сигнала о том что собеседник набирает сообщение
+    if (typeDatagram == 'T') {
+        type = 'T';
+        state = "write";
+        QString name = UserSettings::getAuthorizationUser(login, password);
+        QString ipAdress = UserSettings::getUserAdress(toSendUser);
+        int port = UserSettings::getUserPort(toSendUser);
+        ui->textEdit->append(ipAdress + "  " + port + "  " + QString("%0").arg(type));
+
+        transferMessage(ipAdress, port, type, state, message, name);
     }
 }
 
 void Server::on_startServer_triggered()
 {
     udpSocket_->bind(55555);
+}
+
+void Server::onIconActivated(QSystemTrayIcon::ActivationReason reason)
+{
+    switch(reason) {
+    case QSystemTrayIcon::Trigger:
+        // Событие игнорируется в том случае, если чекбокс не отмечен
+        if (ui->appTray->isChecked()) {
+            /* иначе, если окно видимо, то оно скрывается, и наоборот,
+             * если скрыто, то разворачивается на экран
+             */
+            if(!this->isVisible()){
+                this->show();
+            } else {
+                this->hide();
+            }
+        }
+        break;
+    default:
+        break;
+    }
+}
+
+void Server::closeEvent(QCloseEvent *event)
+{
+/* Если окно видимо и чекбокс отмечен, то завершение приложения игнорируется, а
+ * окно просто скрывается, что сопровождается соответствующим всплывающим сообщением
+ */
+    if (this->isVisible() && ui->appTray->isChecked()) {
+        event->ignore();
+        this->hide();
+        QSystemTrayIcon::MessageIcon icon = QSystemTrayIcon::MessageIcon(
+                    QSystemTrayIcon::Information);
+        trayIcon_->showMessage("Сервер",
+                               "Приложение свернуто в трей. Для того чтобы, "
+                               "развернуть окно приложения, щелкните по иконке приложения в трее",
+                               icon, 4000);
+    }
 }

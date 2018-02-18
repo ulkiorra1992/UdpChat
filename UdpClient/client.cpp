@@ -21,7 +21,7 @@ Client::Client(QWidget *parent) :
     state_ = new InquiryState();
     connect(state_, SIGNAL(responseReceived(bool)), this, SLOT(onServerState(bool)));
 
-    ui->lblStateRegAuthorization->hide();
+    ui->lblStateInfo->hide();
 
 /* Инициализируем иконку трея, устанавливаем иконку своего приложения,
  * а также задаем всплывающую подсказку
@@ -56,6 +56,8 @@ Client::Client(QWidget *parent) :
     connect(udpSocket_, SIGNAL(readyRead()), this, SLOT(onProcessDatagram()));
 
     connect(ui->listWidget, SIGNAL(clicked(QModelIndex)), this, SLOT(onListWidgetUser(QModelIndex)));
+
+    connect(ui->TeMessageOut, SIGNAL(textChanged()), this, SLOT(onTextChanged()));
 }
 
 Client::~Client()
@@ -148,6 +150,18 @@ void Client::onServerState(bool state)
     }
 }
 
+void Client::onTextChanged()
+{
+    QByteArray baDatagram;
+    QDataStream out(&baDatagram, QIODevice::WriteOnly);
+    out << 'T';
+    out << login_;
+    out << nickName_;
+    out << password_;
+    out << userLogin_;
+    udpSocket_->writeDatagram(baDatagram, QHostAddress(serverIp_), 55555);
+}
+
 
 void Client::onProcessDatagram()
 {
@@ -157,6 +171,7 @@ void Client::onProcessDatagram()
     QHostAddress remoteAddr;
     quint16 remotePort;
     QString receivedMessage;
+    QString name;
     QDateTime dateTime = QDateTime::currentDateTime();
 
     do {
@@ -167,26 +182,28 @@ void Client::onProcessDatagram()
 
     QDataStream in(&baDatagram, QIODevice::ReadOnly);
 
-    in >> typeDatagram >> state >> users_ >> receivedMessage;
+    in >> typeDatagram >> state >> users_ >> receivedMessage >> name;
 
     if (typeDatagram == 'R') {
+        state_->stopTimerRequest();
         if (state == "failure") {
-            ui->lblStateRegAuthorization->show();
-            ui->lblStateRegAuthorization->setText("Пользователь с таким логином существует!");
+            ui->lblStateInfo->show();
+            ui->lblStateInfo->setText("Пользователь с таким логином существует!");
         } else {
-            ui->lblStateRegAuthorization->hide();
-            ui->lblStateRegAuthorization->setText("");
+            ui->lblStateInfo->hide();
+            ui->lblStateInfo->setText("");
             ui->lblState->setText("Успех!");
         }
     }
 
     if (typeDatagram == 'A') {
+        state_->stopTimerRequest();
         if (state == "failure") {
-            ui->lblStateRegAuthorization->show();
-            ui->lblStateRegAuthorization->setText("Не правильные логин или пароль!");
+            ui->lblStateInfo->show();
+            ui->lblStateInfo->setText("Не правильные логин или пароль!");
         } else {
-            ui->lblStateRegAuthorization->hide();
-            ui->lblStateRegAuthorization->setText("");
+            ui->lblStateInfo->hide();
+            ui->lblStateInfo->setText("");
             ui->lblState->setText("Успех!");
             ui->listWidget->clear();
             Q_FOREACH(QString login, users_.keys()) { // получаем сисок логинов и по ним получаем список имен пользователей для отображения
@@ -199,6 +216,9 @@ void Client::onProcessDatagram()
     }
 
     if (typeDatagram == 'M') {
+        state_->stopTimerRequest();
+        ui->lblStateInfo->show();
+        ui->lblStateInfo->setText(name + "(онлайн)");
         ui->TeMessageIn->append(dateTime.toString("[hh:mm:ss]")
                                 /*+ "<b><font color=blue>Принято: </font></b>"*/);
         ui->TeMessageIn->setAlignment(Qt::AlignLeft);
@@ -219,6 +239,7 @@ void Client::onProcessDatagram()
     }
 
     if (typeDatagram == 'Q') {
+        state_->stopTimerRequest();
         ui->listWidget->clear();
         Q_FOREACH(QString login, users_.keys()) { // получаем сисок логинов и по ним получаем список имен пользователей для отображения
             usersListWidget(users_.value(login));
@@ -231,6 +252,13 @@ void Client::onProcessDatagram()
             state_->stopTimerRequest();
             ui->lblState->setText("<b><font color=green>есть связь с сервером</font></b>");
         }
+    }
+
+    if (typeDatagram == 'T') {
+        state_->stopTimerRequest();
+        ui->lblStateInfo->show();
+        ui->lblStateInfo->setText(name + "(<b><font color=green>печатает...</font></b>)");
+        qDebug() << state;
     }
 }
 
@@ -247,9 +275,11 @@ void Client::on_tbSend_clicked()
     out << ui->TeMessageOut->toPlainText();
     udpSocket_->writeDatagram(baDatagram, QHostAddress(serverIp_), 55555);
     ui->TeMessageIn->setAlignment(Qt::AlignRight);
-    ui->TeMessageIn->setFont(QFont("Times", 12, QFont::Bold));
+    ui->TeMessageIn->setFont(QFont("Times", 10, QFont::Bold));
     ui->TeMessageIn->append(users_.value(login_) + dateTime.toString("[hh:mm:ss]"));
     ui->TeMessageIn->append(ui->TeMessageOut->toPlainText());
+//    ui->TeMessageIn->append(QString("%0%1/>%2").arg("<img src=:/img/").arg("3.gif").
+//                            arg(ui->TeMessageOut->toPlainText()));
     ui->TeMessageOut->clear();
 }
 
@@ -307,3 +337,16 @@ void Client::onListWidgetUser(QModelIndex index)
     userLogin_ = users_.key(ui->listWidget->item(index.row())->text());
     qDebug() << userLogin_;
 }
+
+void Client::on_action_2_triggered()
+{
+    QFile styleSheet(":/style/transparent.qss");
+
+    if (!styleSheet.open(QIODevice::ReadOnly)) {
+        qWarning("Unable to open :/style/transparent.qss");
+        return;
+    }
+
+    qApp->setStyleSheet(styleSheet.readAll());
+}
+
