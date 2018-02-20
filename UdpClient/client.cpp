@@ -153,8 +153,9 @@ void Client::onServerState(bool state)
 void Client::onTextChanged()
 {
     QByteArray baDatagram;
+    type_= 'T';
     QDataStream out(&baDatagram, QIODevice::WriteOnly);
-    out << 'T';
+    out << type_;
     out << login_;
     out << nickName_;
     out << password_;
@@ -217,12 +218,11 @@ void Client::onProcessDatagram()
 
     if (typeDatagram == 'M') {
         state_->stopTimerRequest();
-        ui->lblStateInfo->show();
-        ui->lblStateInfo->setText(name + "(онлайн)");
-        ui->TeMessageIn->append(dateTime.toString("[hh:mm:ss]")
+        ui->TeMessageIn->setTextColor(QColor(Qt::black));
+        ui->TeMessageIn->append(name + dateTime.toString(" [hh:mm:ss]")
                                 /*+ "<b><font color=blue>Принято: </font></b>"*/);
         ui->TeMessageIn->setAlignment(Qt::AlignLeft);
-        ui->TeMessageIn->setTextColor(QColor(Qt::gray));
+        ui->TeMessageIn->setTextColor(QColor(Qt::darkGray));
         ui->TeMessageIn->append(receivedMessage);
 
         onShowMessage(receivedMessage);
@@ -249,6 +249,7 @@ void Client::onProcessDatagram()
 
     if (typeDatagram == 'C') {
         if (state == "online") {
+            ui->lblStateInfo->setText(" ");
             state_->stopTimerRequest();
             ui->lblState->setText("<b><font color=green>есть связь с сервером</font></b>");
         }
@@ -257,8 +258,7 @@ void Client::onProcessDatagram()
     if (typeDatagram == 'T') {
         state_->stopTimerRequest();
         ui->lblStateInfo->show();
-        ui->lblStateInfo->setText(name + "(<b><font color=green>печатает...</font></b>)");
-        qDebug() << state;
+        ui->lblStateInfo->setText("(<b><font color=green>печатает...</font></b>)");
     }
 }
 
@@ -274,9 +274,12 @@ void Client::on_tbSend_clicked()
     out << userLogin_;
     out << ui->TeMessageOut->toPlainText();
     udpSocket_->writeDatagram(baDatagram, QHostAddress(serverIp_), 55555);
+
     ui->TeMessageIn->setAlignment(Qt::AlignRight);
-    ui->TeMessageIn->setFont(QFont("Times", 10, QFont::Bold));
-    ui->TeMessageIn->append(users_.value(login_) + dateTime.toString("[hh:mm:ss]"));
+//    ui->TeMessageIn->setFont(QFont("Times", 10, QFont::Bold));
+    ui->TeMessageIn->setTextColor(QColor(Qt::black));
+    ui->TeMessageIn->append(users_.value(login_) + dateTime.toString(" [hh:mm:ss]"));
+    ui->TeMessageIn->setTextColor(QColor(Qt::darkGray));
     ui->TeMessageIn->append(ui->TeMessageOut->toPlainText());
 //    ui->TeMessageIn->append(QString("%0%1/>%2").arg("<img src=:/img/").arg("3.gif").
 //                            arg(ui->TeMessageOut->toPlainText()));
@@ -350,3 +353,15 @@ void Client::on_action_2_triggered()
     qApp->setStyleSheet(styleSheet.readAll());
 }
 
+
+void Client::on_NoStyle_triggered()
+{
+    QFile styleSheet(":/style/nostyle.qss");
+
+    if (!styleSheet.open(QIODevice::ReadOnly)) {
+        qWarning("Unable to open :/style/nostyle.qss");
+        return;
+    }
+
+    qApp->setStyleSheet(styleSheet.readAll());
+}

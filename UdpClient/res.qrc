@@ -8,5 +8,6 @@
         <file>img/3.gif</file>
         <file>style/transparent.qss</file>
         <file>style/nature_1.jpg</file>
+        <file>style/nostyle.qss</file>
     </qresource>
 </RCC>

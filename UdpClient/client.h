@@ -65,6 +65,8 @@ private slots:
 
     void on_action_2_triggered();
 
+    void on_NoStyle_triggered();
+
 protected:
     /**
      * @brief closeEvent Виртуальная функция родительского класса в нашем классе
