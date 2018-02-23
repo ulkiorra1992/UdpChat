@@ -13,7 +13,7 @@ QFrame, QLabel#title {
     border-width: 2px;
     padding: 1px;
     border-style: solid;
-    border-color: black;
+    background-color: rgb(255, 255, 255);
     border-radius: 5px;
 }
 

@@ -145,11 +145,20 @@ font: 75 10pt &quot;DejaVu Sans Mono&quot;;</string>
      <property name="title">
       <string>Обои</string>
      </property>
-     <addaction name="action_2"/>
+     <addaction name="Mountains"/>
      <addaction name="NoStyle"/>
+    </widget>
+    <widget class="QMenu" name="menu_4">
+     <property name="title">
+      <string>Цвет</string>
+     </property>
+     <addaction name="ColorFontIn"/>
+     <addaction name="ColorFontOut"/>
     </widget>
     <addaction name="appTray"/>
     <addaction name="menu_3"/>
+    <addaction name="font"/>
+    <addaction name="menu_4"/>
    </widget>
    <addaction name="menu"/>
    <addaction name="menu_2"/>
@@ -192,7 +201,7 @@ font: 75 10pt &quot;DejaVu Sans Mono&quot;;</string>
     <string>Сворачивать в трей</string>
    </property>
   </action>
-  <action name="action_2">
+  <action name="Mountains">
    <property name="text">
     <string>Горы</string>
    </property>
@@ -205,6 +214,21 @@ font: 75 10pt &quot;DejaVu Sans Mono&quot;;</string>
   <action name="NoStyle">
    <property name="text">
     <string>Стандартные</string>
+   </property>
+  </action>
+  <action name="font">
+   <property name="text">
+    <string>Шрифты</string>
+   </property>
+  </action>
+  <action name="ColorFontIn">
+   <property name="text">
+    <string>Входящего сообщения</string>
+   </property>
+  </action>
+  <action name="ColorFontOut">
+   <property name="text">
+    <string>Отправленного сообщения</string>
    </property>
   </action>
  </widget>

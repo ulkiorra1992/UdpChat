@@ -47,6 +47,8 @@ private:
     QString password_;
     QString serverIp_;
     QString userLogin_;
+    QColor colorOutMsg_;
+    QColor colorInMsg_;
 
     void usersData();
     void usersListWidget(QString user);
@@ -63,9 +65,11 @@ private slots:
     void onServerState(bool state);
     void onTextChanged();
 
-    void on_action_2_triggered();
-
+    void on_Mountains_triggered();
     void on_NoStyle_triggered();
+    void on_font_triggered();
+    void on_ColorFontOut_triggered();
+    void on_ColorFontIn_triggered();
 
 protected:
     /**

@@ -136,6 +136,12 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>leUserName</tabstop>
+  <tabstop>leUserLogin</tabstop>
+  <tabstop>leUserPassword</tabstop>
+  <tabstop>leServerIp</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

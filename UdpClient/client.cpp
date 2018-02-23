@@ -4,6 +4,8 @@
 #include "authorizationusers.h"
 
 #include <QDateTime>
+#include <QFontDialog>
+#include <QColorDialog>
 #include <QCoreApplication>
 
 Client::Client(QWidget *parent) :
@@ -12,6 +14,7 @@ Client::Client(QWidget *parent) :
 {
     ui->setupUi(this);
     setWindowIcon(QIcon(":/img/chat.png"));
+    setWindowTitle("Чат версии 0.1");
 
     pTimer_ = new QTimer(this);
     pTimer_->setInterval(3000);
@@ -157,7 +160,7 @@ void Client::onTextChanged()
     QDataStream out(&baDatagram, QIODevice::WriteOnly);
     out << type_;
     out << login_;
-    out << nickName_;
+    out << users_.value(login_);
     out << password_;
     out << userLogin_;
     udpSocket_->writeDatagram(baDatagram, QHostAddress(serverIp_), 55555);
@@ -219,10 +222,9 @@ void Client::onProcessDatagram()
     if (typeDatagram == 'M') {
         state_->stopTimerRequest();
         ui->TeMessageIn->setTextColor(QColor(Qt::black));
-        ui->TeMessageIn->append(name + dateTime.toString(" [hh:mm:ss]")
-                                /*+ "<b><font color=blue>Принято: </font></b>"*/);
+        ui->TeMessageIn->append(name + dateTime.toString(" [hh:mm:ss]"));
         ui->TeMessageIn->setAlignment(Qt::AlignLeft);
-        ui->TeMessageIn->setTextColor(QColor(Qt::darkGray));
+        ui->TeMessageIn->setTextColor(colorInMsg_);
         ui->TeMessageIn->append(receivedMessage);
 
         onShowMessage(receivedMessage);
@@ -241,15 +243,25 @@ void Client::onProcessDatagram()
     if (typeDatagram == 'Q') {
         state_->stopTimerRequest();
         ui->listWidget->clear();
+        userLogin_.clear();
         Q_FOREACH(QString login, users_.keys()) { // получаем сисок логинов и по ним получаем список имен пользователей для отображения
-            usersListWidget(users_.value(login));
-            setWindowTitle("Пользователь: " + users_.value(login_));
+            if (login != login_) {
+                usersListWidget(users_.value(login));
+                setWindowTitle("Пользователь: " + users_.value(login_));
+            }
         }
     }
 
     if (typeDatagram == 'C') {
         if (state == "online") {
-            ui->lblStateInfo->setText(" ");
+            if (!users_.value(userLogin_).isEmpty()) {
+                ui->lblStateInfo->show();
+                ui->lblStateInfo->setText(QString("%0 %1")
+                                          .arg(users_.value(userLogin_))
+                                          .arg("(<b><font color=green>онлайн</font></b>)"));
+            } else {
+                ui->lblStateInfo->hide();
+            }
             state_->stopTimerRequest();
             ui->lblState->setText("<b><font color=green>есть связь с сервером</font></b>");
         }
@@ -258,7 +270,7 @@ void Client::onProcessDatagram()
     if (typeDatagram == 'T') {
         state_->stopTimerRequest();
         ui->lblStateInfo->show();
-        ui->lblStateInfo->setText("(<b><font color=green>печатает...</font></b>)");
+        ui->lblStateInfo->setText(name + " (<b><font color=green>печатает...</font></b>)");
     }
 }
 
@@ -276,10 +288,9 @@ void Client::on_tbSend_clicked()
     udpSocket_->writeDatagram(baDatagram, QHostAddress(serverIp_), 55555);
 
     ui->TeMessageIn->setAlignment(Qt::AlignRight);
-//    ui->TeMessageIn->setFont(QFont("Times", 10, QFont::Bold));
     ui->TeMessageIn->setTextColor(QColor(Qt::black));
     ui->TeMessageIn->append(users_.value(login_) + dateTime.toString(" [hh:mm:ss]"));
-    ui->TeMessageIn->setTextColor(QColor(Qt::darkGray));
+    ui->TeMessageIn->setTextColor(colorOutMsg_);
     ui->TeMessageIn->append(ui->TeMessageOut->toPlainText());
 //    ui->TeMessageIn->append(QString("%0%1/>%2").arg("<img src=:/img/").arg("3.gif").
 //                            arg(ui->TeMessageOut->toPlainText()));
@@ -338,10 +349,9 @@ void Client::on_Quit_triggered()
 void Client::onListWidgetUser(QModelIndex index)
 {
     userLogin_ = users_.key(ui->listWidget->item(index.row())->text());
-    qDebug() << userLogin_;
 }
 
-void Client::on_action_2_triggered()
+void Client::on_Mountains_triggered()
 {
     QFile styleSheet(":/style/transparent.qss");
 
@@ -364,4 +374,29 @@ void Client::on_NoStyle_triggered()
     }
 
     qApp->setStyleSheet(styleSheet.readAll());
+}
+
+void Client::on_font_triggered()
+{
+    bool ok;
+     QFont font = QFontDialog::getFont(&ok, this);
+     if (ok) {
+        ui->TeMessageIn->setFont(font);
+     }
+}
+
+void Client::on_ColorFontOut_triggered()
+{
+    QColor color = QColorDialog::getColor();
+    if (color.isValid() ) {
+        colorOutMsg_ = color;
+    }
+}
+
+void Client::on_ColorFontIn_triggered()
+{
+    QColor color = QColorDialog::getColor();
+    if (color.isValid() ) {
+        colorInMsg_ = color;
+    }
 }

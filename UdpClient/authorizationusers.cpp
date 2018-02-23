@@ -7,6 +7,8 @@ AuthorizationUsers::AuthorizationUsers(QWidget *parent) :
 {
     ui->setupUi(this);
     setWindowTitle("Авторизация");
+    setWindowIcon(QIcon(":/img/chat.png"));
+
 // Создаем строку для регулярного выражения
     QString ipRange = "(?:[0-1]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])";
 // Создаем регулярное выражение с применением строки, как повторяющегося элемента
