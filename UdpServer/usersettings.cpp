@@ -15,7 +15,7 @@ UserSettings::UserSettings(QObject *parent) :
 bool UserSettings::getRegistrationUser()
 {
 // ============ Для отображения русских букв в файле Setting.ini ============ //
-    QTextCodec *codecForLocaleName = QTextCodec::codecForName("Windows-1251");
+    QTextCodec *codecForLocaleName = QTextCodec::codecForName("CP866");
     QTextCodec::setCodecForLocale(codecForLocaleName);
 //
 

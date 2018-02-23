@@ -169,8 +169,8 @@ void Server::onProcessDatagram()
     if (typeDatagram =='M') {
         type = 'M';
         state = "success";
-        ui->textEdit->append(QString("Время:%0 login=%1, message=%2").arg(dateTime.toString("[hh:mm:ss] "))
-                             .arg(toSendUser).arg(message));
+//        ui->textEdit->append(QString("Время:%0 login=%1, message=%2").arg(dateTime.toString("[hh:mm:ss] "))
+//                             .arg(toSendUser).arg(message));
         QString name = UserSettings::getAuthorizationUser(login, password);
         QString ipAdress = UserSettings::getUserAdress(toSendUser);
         int port = UserSettings::getUserPort(toSendUser);
@@ -217,12 +217,11 @@ void Server::onProcessDatagram()
     if (typeDatagram == 'T') {
         type = 'T';
         state = "write";
-        QString name = UserSettings::getAuthorizationUser(login, password);
         QString ipAdress = UserSettings::getUserAdress(toSendUser);
         int port = UserSettings::getUserPort(toSendUser);
         ui->textEdit->append(ipAdress + "  " + port + "  " + QString("%0").arg(type));
 
-        transferMessage(ipAdress, port, type, state, message, name);
+        transferMessage(ipAdress, port, type, state, message, userName);
     }
 }
 
